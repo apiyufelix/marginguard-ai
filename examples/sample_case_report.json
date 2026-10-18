@@ -1,0 +1,94 @@
+{
+  "report_schema_version": "1",
+  "generated_at_utc": "2026-10-17T23:00:00+00:00",
+  "currency": "USD",
+  "organization": "demo-distributor",
+  "finding": {
+    "finding_id": "EXAMPLE-CASE-001",
+    "invoice_line_id": "IMP-IL001",
+    "rule_code": "PRICE_UNDERBILLING",
+    "rule_version": "1",
+    "version": 4,
+    "status": "confirmed",
+    "assigned_to": "Demo reviewer",
+    "created_at": "2026-10-17T23:00:00+00:00",
+    "updated_at": "2026-10-17T23:00:00+00:00"
+  },
+  "amounts": {
+    "potential_underbilling": "20.00",
+    "confirmed_amount": "20.00",
+    "net_recorded_recoveries": "10.00",
+    "confirmed_outstanding": "10.00"
+  },
+  "analysis": {
+    "method": "rule_based_v1",
+    "summary": "Saved evidence for invoice line IMP-IL001 shows 10 units at $18.0000 per unit, compared with an agreed net price of $20.0000. Saved potential underbilling is $20.00.",
+    "review_summary": "The case is confirmed, with $20.00 confirmed and $10.00 in net recorded recoveries. Confirmed outstanding is $10.00.",
+    "possible_explanations": [],
+    "recommended_checks": [
+      "Reconcile the remaining $10.00 with accounts receivable and the supporting financial records.",
+      "Record each supported recovery with a distinct active reference; keep unresolved balances visible."
+    ],
+    "quality_issues": [],
+    "lineage_summary": "Source batch and row pointers are recorded for both order and invoice evidence.",
+    "calculation_reconciles": true
+  },
+  "captured_evidence": {
+    "invoice_id": "IMP-I001",
+    "order_id": "IMP-O001",
+    "order_line_id": "IMP-OL001",
+    "invoice_line_id": "IMP-IL001",
+    "customer_name": "Fictional Demo Customer",
+    "sku": "MG-DEMO",
+    "quantity": 10,
+    "agreed_net_unit_price": "20.0000",
+    "invoiced_net_unit_price": "18.0000",
+    "potential_loss": "20.00",
+    "order_source_batch": "DEMO-ORDER-BATCH",
+    "order_source_row": 2,
+    "invoice_source_batch": "DEMO-INVOICE-BATCH",
+    "invoice_source_row": 2
+  },
+  "case_activity": [
+    {
+      "event_id": "E1",
+      "event_type": "created",
+      "actor": "MarginGuard rule engine",
+      "recorded_at": "2026-10-17T23:00:00+00:00",
+      "amount": null,
+      "signed_recovery_amount": null,
+      "reverses_event_id": null,
+      "details": {
+        "potential_loss": "20.00"
+      }
+    },
+    {
+      "event_id": "E2",
+      "event_type": "status_change",
+      "actor": "Demo reviewer",
+      "recorded_at": "2026-10-17T23:00:00+00:00",
+      "amount": null,
+      "signed_recovery_amount": null,
+      "reverses_event_id": null,
+      "details": {
+        "from": "investigating",
+        "to": "confirmed",
+        "reason": "Synthetic evidence review",
+        "confirmed_amount": "20.00"
+      }
+    },
+    {
+      "event_id": "E3",
+      "event_type": "recovery",
+      "actor": "Demo reviewer",
+      "recorded_at": "2026-10-17T23:00:00+00:00",
+      "amount": "10.00",
+      "signed_recovery_amount": "10.00",
+      "reverses_event_id": null,
+      "details": {
+        "reference": "DEMO-REC-001",
+        "note": "Synthetic portfolio test"
+      }
+    }
+  ]
+}

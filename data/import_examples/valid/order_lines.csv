@@ -1,0 +1,4 @@
+order_line_id,order_id,product_id,quantity,agreed_net_unit_price,unit_cost_snapshot
+IMP-OL001,IMP-O001,P001,10,20.00,12.00
+IMP-OL002,IMP-O001,P002,8,25.00,15.00
+IMP-OL003,IMP-O002,P003,5,100.00,65.00

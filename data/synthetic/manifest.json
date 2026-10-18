@@ -1,0 +1,18 @@
+{
+  "seed": 42,
+  "date_range": "2026-01-01 through 2026-08-01",
+  "currency": "USD",
+  "counts": {
+    "tenants": 1,
+    "customers": 40,
+    "products": 60,
+    "orders": 500,
+    "invoices": 500,
+    "order_lines": 1231,
+    "invoice_lines": 1313,
+    "freight_charges": 500,
+    "credits": 50
+  },
+  "underbilling_cases": 116,
+  "expected_potential_loss": "69506.40"
+}

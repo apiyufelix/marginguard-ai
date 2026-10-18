@@ -1,0 +1,3 @@
+order_id,customer_id,order_date,status
+IMP-O001,C001,2026-09-01,fulfilled
+IMP-O002,C002,2026-09-02,fulfilled
