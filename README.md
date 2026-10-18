@@ -54,6 +54,34 @@ The included seed-42 fixture contains fictional customers, products, orders, inv
 
 These are synthetic benchmark amounts, not verified customer loss, revenue generated or money recovered. Fixture truth labels support validation and are not loaded into application tables.
 
+## Demo screenshots
+
+Real application captures from the hosted synthetic-data demo. These images show the case state at capture time; live review balances may change. All business records and financial amounts shown are fictional.
+
+### Dashboard
+
+![Dashboard showing 116 candidate lines, $69,506.40 potential underbilling and monthly exposure](docs/screenshots/dashboard.png)
+
+The source comparison identifies potential discrepancies separately from confirmed amounts and net recorded recoveries. At capture, all 116 findings were saved and confirmation/recovery totals were zero.
+
+### Customer and product exposure
+
+![Customer and product rankings with supporting amounts and shares](docs/screenshots/exposure-analysis.png)
+
+Ranked exposure helps reviewers prioritize which fictional customers and products to investigate.
+
+### Case evidence
+
+![Open case O00144-L1-B1 with a $1,573.56 pricing discrepancy and rule-based summary](docs/screenshots/case-evidence.png)
+
+For invoice line O00144-L1-B1, 62 units × ($253.78 agreed − $228.40 billed) = $1,573.56 potential underbilling. The case is open, with no amount confirmed and no recorded recovery.
+
+### Exported investigation report
+
+![Exported HTML report showing case amounts, recommended checks and hypotheses to verify](docs/screenshots/case-report.png)
+
+The portable report explains the candidate amount and recommended review steps. Suggested explanations are hypotheses; initial seed records have no upload-batch lineage.
+
 ## Run locally
 
 Configure Google login and bootstrap the first company Admin using [Phase 8C setup](PHASE8C_SETUP.md). For an existing configured project, run from its root:
