@@ -2,11 +2,15 @@
 
 **An evidence-based invoice underbilling investigation application for B2B distributors.**
 
-MarginGuard compares posted invoice prices with agreed order prices, preserves the evidence, and helps reviewers track decisions and recorded recoveries. It connects source validation, exact financial rules, case management and executive reporting in one local portfolio application.
+MarginGuard compares posted invoice prices with agreed order prices, preserves the evidence, and helps reviewers track decisions and recorded recoveries. It connects source validation, exact financial rules, case management and executive reporting in one hosted portfolio demonstration.
 
 **Stack:** Python · Streamlit · PostgreSQL · SQLAlchemy · pandas · psycopg
 
-**Current scope:** local development application with Google sign-in, company memberships, Viewer/Analyst/Admin authorization, and deterministic rule-based explanations. Production hosting, database row security and accounting reconciliation remain future work. See [authentication setup](PHASE8C_SETUP.md).
+**Live demo:** [marginguard-ai-demo.streamlit.app](https://marginguard-ai-demo.streamlit.app/)
+
+**Reviewer access:** Sign in with Google, then share your MarginGuard account ID with Felix through the channel where you received the demo invitation. Access requires an explicit Viewer membership; signing in alone does not grant company access. See [reviewer access](docs/reviewer_access.md).
+
+**Current scope:** hosted synthetic-data demo on Streamlit Community Cloud with Neon PostgreSQL, Google sign-in, company memberships, Viewer/Analyst/Admin authorization and deterministic rule-based explanations. Database row-level security, production operations and accounting reconciliation remain future work. See [authentication setup](PHASE8C_SETUP.md).
 
 ## Business problem
 
@@ -68,13 +72,13 @@ For a fresh installation, follow [Windows setup](docs/setup_windows.md). It cove
 
 The suite has **97 tests: 63 unit/fixture checks and 34 optional integration tests**. Set `MARGINGUARD_TEST_DATABASE_URL` to a disposable PostgreSQL database to enable integration tests, which create and drop isolated schemas.
 
-The latest development run passed all 97 tests using embedded PostgreSQL through its socket adapter. Streamlit AppTest checked authenticated filters, imports, case/recovery workflows, reports, first-login denial, Admin membership changes, company switching, Viewer restrictions and revocation with mocked Google identities. Native Windows PostgreSQL/Python 3.13 and real Google login are checked separately on the user's machine. See [access design](docs/access_design.md) for limits; [Phase 5 verification](docs/phase5_verification.md) records the earlier milestone.
+The development run passed all 97 tests using embedded PostgreSQL through its socket adapter. Streamlit AppTest checked authenticated filters, imports, case/recovery workflows, reports, first-login denial, Admin membership changes, company switching, Viewer restrictions and revocation with mocked Google identities. Manual checks also covered Windows PostgreSQL/Python 3.13, real Google login, local role changes and revocation, and hosted Admin/Viewer access and report downloads. See [access design](docs/access_design.md) for limits; [Phase 5 verification](docs/phase5_verification.md) records the earlier milestone.
 
 ## Automated checks on GitHub
 
 The [Tests workflow](.github/workflows/tests.yml) is configured to run the full suite on Python 3.12 and 3.13 with a disposable PostgreSQL 16 service for pushes and pull requests to `main`. It can also be started manually. Its strict runner rejects missing database configuration, skipped tests and empty discovery.
 
-This configuration is verified locally; the first hosted matrix result must be confirmed in the repository's Actions tab after pushing it. See [CI setup and verification](docs/ci.md). The workflow runs application tests and does not deploy the application.
+Hosted checks passed on Python 3.12 and 3.13 with PostgreSQL 16 for the authentication pull request; the maintainer also confirmed a green main run after the deployment package fix. Check [Actions](https://github.com/apiyufelix/marginguard-ai/actions) for the current result. See [CI setup and verification](docs/ci.md). The workflow runs application tests and does not deploy the application.
 
 ## Project layout
 
@@ -82,7 +86,7 @@ This configuration is verified locally; the first hosted matrix result must be c
 |---|---|
 | `app.py` | Streamlit navigation and entry point. |
 | `src/marginguard/` | Rules, validation, imports, cases, reports and dashboard services/UI. |
-| `sql/` | Versioned PostgreSQL migrations 001–003. |
+| `sql/` | Versioned PostgreSQL migrations 001–005. |
 | `scripts/` | Initialization, migration, fixture generation and loading. |
 | `data/synthetic/` | Fictional fixture and validation manifest. |
 | `data/import_examples/` | Valid and invalid upload examples. |
@@ -93,7 +97,8 @@ This configuration is verified locally; the first hosted matrix result must be c
 ## Explore the project
 
 - [Portfolio case study](docs/portfolio_case_study.md)
-- [Demo walkthrough](docs/demo_walkthrough.md)
+- [Demo walkthrough and screenshot guide](docs/demo_walkthrough.md)
+- [Reviewer access](docs/reviewer_access.md)
 - [Windows setup](docs/setup_windows.md)
 - [GitHub setup](docs/github_setup.md)
 - [Data dictionary](docs/data_dictionary.md)
