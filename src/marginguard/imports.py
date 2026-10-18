@@ -4,6 +4,7 @@ import json
 from uuid import uuid4
 from sqlalchemy import text
 from marginguard.validation import CONTRACTS, parse_bundle, validate_context
+from marginguard.access import require_access
 
 class MigrationRequired(RuntimeError):
     pass
@@ -28,6 +29,7 @@ def _context(conn, tenant):
 
 
 def validate_upload(conn, tenant, uploads):
+    require_access(conn,tenant,'write')
     report = parse_bundle(uploads, tenant)
     if report.ok:
         data, hashes = _context(conn, tenant)
@@ -38,6 +40,7 @@ def validate_upload(conn, tenant, uploads):
 def commit_upload(engine, tenant, uploads):
     """Re-parse and revalidate under a per-tenant transaction lock at commit time."""
     with engine.begin() as conn:
+        require_access(conn,tenant,'write')
         conn.execute(text('SELECT pg_advisory_xact_lock(hashtextextended(:tenant,0))'), {'tenant':tenant})
         report = validate_upload(conn, tenant, uploads)
         if not report.ok:
@@ -72,5 +75,6 @@ def commit_upload(engine, tenant, uploads):
 
 
 def recent_imports(conn, tenant):
+    require_access(conn,tenant)
     return [dict(x) for x in conn.execute(text('''SELECT file_name,dataset,row_count,status,imported_at
         FROM import_batches WHERE tenant_id=:tenant ORDER BY imported_at DESC,batch_id LIMIT 20'''),{'tenant':tenant}).mappings()]

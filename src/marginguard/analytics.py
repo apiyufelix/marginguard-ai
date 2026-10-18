@@ -75,9 +75,11 @@ def read_dashboard(engine, tenant):
     """Read related totals from one tenant-scoped, read-only PostgreSQL snapshot."""
     from sqlalchemy import text
     from marginguard.cases import list_cases
+    from marginguard.access import require_access
 
     with engine.begin() as conn:
         conn.exec_driver_sql('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY')
+        require_access(conn,tenant)
         organization = conn.execute(text('SELECT name FROM tenants WHERE tenant_id=:tenant'), {'tenant': tenant}).scalar()
         if organization is None:
             raise ValueError('The configured organization does not exist.')

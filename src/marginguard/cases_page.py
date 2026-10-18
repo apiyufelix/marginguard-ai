@@ -49,7 +49,7 @@ def render_case_metrics(conn,tenant):
     d.metric('Confirmed outstanding',f"${summary['confirmed_outstanding']:,.2f}")
 
 
-def render_investigations(engine,tenant):
+def render_investigations(engine,tenant,*,can_write=True,actor_name=None):
     st.subheader('Investigations')
     st.write('Save the latest underbilling candidates, review their evidence, and track the decisions and recoveries.')
     notice=st.session_state.pop('case_notice',None)
@@ -61,7 +61,7 @@ def render_investigations(engine,tenant):
     except CaseMigrationRequired:
         st.error('Run python scripts/migrate_db.py from your project terminal to apply migration 003.')
         return
-    if st.button('Run detection',type='primary'):
+    if can_write and st.button('Run detection',type='primary'):
         try:
             outcome=run_detection(engine,tenant)
             st.success(f"Detection complete: {outcome['created']} new findings; {outcome['already_saved']} already saved.")
@@ -114,51 +114,58 @@ def render_investigations(engine,tenant):
     if case['confirmed_amount'] is not None:
         c.metric('Confirmed outstanding',f"${case['confirmed_amount']-case['net_recovered']:,.2f}")
     render_case_support(case)
-    actor=st.text_input('Activity author',value='Felix Apiyu',key='case_activity_author',max_chars=128)
-    st.caption('Local demo: author and owner names are entered manually. Recovery entries should reference supporting financial records.')
-    version=case['version']; finding=case['finding_id']
-    with st.expander('Owner and notes'):
-        with st.form(f'owner:{finding}:{version}'):
-            owner=st.text_input('Assigned owner',value=case['assigned_to'] or '',max_chars=128)
-            if st.form_submit_button('Save owner'):
-                _save(lambda:assign_owner(engine,tenant,finding,owner,actor,version,_action_key('owner',case)))
-        with st.form(f'note:{finding}:{version}'):
-            note=st.text_area('Investigation note',max_chars=4000)
-            if st.form_submit_button('Add note'):
-                _save(lambda:add_note(engine,tenant,finding,note,actor,version,_action_key('note',case)))
-    with st.expander('Change status',expanded=True):
-        target=st.selectbox('Next status',ALLOWED_TRANSITIONS[case['status']],key=f'target:{finding}:{version}')
-        with st.form(f'status:{finding}:{version}:{target}'):
-            confirmation=None
-            if case['status']=='investigating' and target=='confirmed':
-                confirmation=st.text_input('Confirmed amount (USD)',value=str(case['potential_loss']))
-                st.caption('Confirm the amount supported by your review. It may be lower than the potential discrepancy.')
-            close_with_balance=False
-            if case['status']=='confirmed' and target=='resolved' and case['net_recovered']<case['confirmed_amount']:
-                close_with_balance=st.checkbox('Close with an unrecovered balance')
-                st.caption('Explain why the remaining balance is being closed. Closing a case does not count that balance as recovered.')
-            reason=st.text_area('Reason for status change',max_chars=2000)
-            if st.form_submit_button('Save status'):
-                _save(lambda:change_status(engine,tenant,finding,target,reason,actor,version,_action_key('status:'+target,case),confirmation,close_with_balance))
-    if case['status']=='confirmed':
-        with st.expander('Record or reverse a recovery'):
-            remaining=case['confirmed_amount']-case['net_recovered']
-            if remaining>0:
-                with st.form(f'recovery:{finding}:{version}'):
-                    amount=st.text_input('Recovery amount (USD)',value='0.00')
-                    reference=st.text_input('Recovery reference',max_chars=128)
-                    recovery_note=st.text_area('Recovery note',max_chars=2000)
-                    if st.form_submit_button('Record recovery'):
-                        _save(lambda:record_recovery(engine,tenant,finding,amount,reference,recovery_note,actor,version,_action_key('recovery',case)))
-            choices=active_recoveries(case)
-            if choices:
-                recovery_map={r['event_id']:r for r in choices}
-                original=st.selectbox('Recovery to reverse',list(recovery_map),key=f'reverse_select:{finding}:{version}',
-                    format_func=lambda key:f"{recovery_map[key]['details'].get('reference','')} · ${recovery_map[key]['amount']:,.2f}")
-                with st.form(f'reverse:{finding}:{version}'):
-                    reversal_note=st.text_area('Reversal reason',max_chars=2000)
-                    if st.form_submit_button('Reverse selected recovery'):
-                        _save(lambda:reverse_recovery(engine,tenant,finding,original,reversal_note,actor,version,_action_key('reverse',case)))
+    if can_write:
+        actor=actor_name
+        if actor is None:
+            actor=st.text_input('Activity author',value='Felix Apiyu',key='case_activity_author',max_chars=128)
+        else:
+            st.text('Activity author: '+actor)
+        st.caption('Recovery entries should reference supporting financial records. Assigned owner is a workflow label.')
+        version=case['version']; finding=case['finding_id']
+        with st.expander('Owner and notes'):
+            with st.form(f'owner:{finding}:{version}'):
+                owner=st.text_input('Assigned owner',value=case['assigned_to'] or '',max_chars=128)
+                if st.form_submit_button('Save owner'):
+                    _save(lambda:assign_owner(engine,tenant,finding,owner,actor,version,_action_key('owner',case)))
+            with st.form(f'note:{finding}:{version}'):
+                note=st.text_area('Investigation note',max_chars=4000)
+                if st.form_submit_button('Add note'):
+                    _save(lambda:add_note(engine,tenant,finding,note,actor,version,_action_key('note',case)))
+        with st.expander('Change status',expanded=True):
+            target=st.selectbox('Next status',ALLOWED_TRANSITIONS[case['status']],key=f'target:{finding}:{version}')
+            with st.form(f'status:{finding}:{version}:{target}'):
+                confirmation=None
+                if case['status']=='investigating' and target=='confirmed':
+                    confirmation=st.text_input('Confirmed amount (USD)',value=str(case['potential_loss']))
+                    st.caption('Confirm the amount supported by your review. It may be lower than the potential discrepancy.')
+                close_with_balance=False
+                if case['status']=='confirmed' and target=='resolved' and case['net_recovered']<case['confirmed_amount']:
+                    close_with_balance=st.checkbox('Close with an unrecovered balance')
+                    st.caption('Explain why the remaining balance is being closed. Closing a case does not count that balance as recovered.')
+                reason=st.text_area('Reason for status change',max_chars=2000)
+                if st.form_submit_button('Save status'):
+                    _save(lambda:change_status(engine,tenant,finding,target,reason,actor,version,_action_key('status:'+target,case),confirmation,close_with_balance))
+        if case['status']=='confirmed':
+            with st.expander('Record or reverse a recovery'):
+                remaining=case['confirmed_amount']-case['net_recovered']
+                if remaining>0:
+                    with st.form(f'recovery:{finding}:{version}'):
+                        amount=st.text_input('Recovery amount (USD)',value='0.00')
+                        reference=st.text_input('Recovery reference',max_chars=128)
+                        recovery_note=st.text_area('Recovery note',max_chars=2000)
+                        if st.form_submit_button('Record recovery'):
+                            _save(lambda:record_recovery(engine,tenant,finding,amount,reference,recovery_note,actor,version,_action_key('recovery',case)))
+                choices=active_recoveries(case)
+                if choices:
+                    recovery_map={r['event_id']:r for r in choices}
+                    original=st.selectbox('Recovery to reverse',list(recovery_map),key=f'reverse_select:{finding}:{version}',
+                        format_func=lambda key:f"{recovery_map[key]['details'].get('reference','')} · ${recovery_map[key]['amount']:,.2f}")
+                    with st.form(f'reverse:{finding}:{version}'):
+                        reversal_note=st.text_area('Reversal reason',max_chars=2000)
+                        if st.form_submit_button('Reverse selected recovery'):
+                            _save(lambda:reverse_recovery(engine,tenant,finding,original,reversal_note,actor,version,_action_key('reverse',case)))
+    else:
+        st.info('Viewer access: case changes and detection are available to Analysts and Admins.')
     st.subheader('Case activity')
     history=[]
     for event in case['events']:

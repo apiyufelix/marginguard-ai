@@ -154,7 +154,9 @@ def case_payload(case,generated_at=None):
         amount=_decimal(event.get('amount'))
         signed=amount if event.get('event_type')=='recovery' else -amount if event.get('event_type')=='recovery_reversal' and amount is not None else None
         events.append({'event_id':event.get('event_id'),'event_type':event.get('event_type'),
-                       'actor':event.get('actor'),'recorded_at':event.get('created_at'),
+                       'actor':event.get('actor'),
+                       'actor_user_id':str(event['actor_user_id']) if event.get('actor_user_id') else None,
+                       'recorded_at':event.get('created_at'),
                        'amount':amount,'signed_recovery_amount':signed,
                        'reverses_event_id':event.get('reverses_event_id'),
                        'details':{k:v for k,v in (event.get('details') or {}).items() if k not in ('request_fingerprint','request_key')}})
@@ -194,7 +196,7 @@ body{margin:0;background:#f1f5f9;color:#172b4d;font:15px/1.55 Arial,sans-serif}m
     document+='<h2>Recommended checks</h2>'+bullets(analysis['recommended_checks'])+hypotheses
     document+='<h2>Source lineage</h2><p>'+esc(analysis['lineage_summary'])+'</p><h2>Captured evidence</h2><table class="evidence">'+evidence_rows+'</table>'
     document+='<h2>Case activity</h2><table><thead><tr><th>Recorded time</th><th>Action</th><th>Author</th><th>Recovery effect (USD)</th><th>Details</th></tr></thead><tbody>'+activity_rows+'</tbody></table>'
-    document+='<footer>Rule-based report from captured evidence and recorded case activity. Author/owner names are user-entered in this local prototype. Recovery entries require supporting financial records; the report does not verify bank settlement. Generated reports are snapshots.</footer></main></body></html>'
+    document+='<footer>Rule-based report from captured evidence and recorded case activity. Authenticated activity is linked to account IDs in the JSON export; legacy author labels and assigned owners may be user-entered. Recovery entries require supporting financial records; the report does not verify bank settlement. Generated reports are snapshots.</footer></main></body></html>'
     return document.encode('utf-8')
 
 

@@ -6,7 +6,7 @@ MarginGuard compares posted invoice prices with agreed order prices, preserves t
 
 **Stack:** Python · Streamlit · PostgreSQL · SQLAlchemy · pandas · psycopg
 
-**Current scope:** local prototype with deterministic rule-based explanations and manually entered reviewer labels. Verified identity, hosted authorization and accounting reconciliation are future work.
+**Current scope:** local development application with Google sign-in, company memberships, Viewer/Analyst/Admin authorization, and deterministic rule-based explanations. Production hosting, database row security and accounting reconciliation remain future work. See [authentication setup](PHASE8C_SETUP.md).
 
 ## Business problem
 
@@ -25,6 +25,7 @@ The initial customer hypothesis is a small industrial or maintenance-supply dist
 | Decision support | Evidence-based summaries, reconciliation issues and suggested checks with possible causes labelled as hypotheses. |
 | Reports | Selected-case HTML/JSON and filtered investigation CSV exports. |
 | Analytics | Customer/invoice-date filters, monthly exposure, customer/product concentrations, case progress, aging and review priorities. |
+| Access | Google OIDC identity, explicit company memberships, role checks in database service operations, verified case actors and append-only membership history. |
 
 ## Financial rule
 
@@ -51,7 +52,7 @@ These are synthetic benchmark amounts, not verified customer loss, revenue gener
 
 ## Run locally
 
-For an existing configured project, run from its root:
+Configure Google login and bootstrap the first company Admin using [Phase 8C setup](PHASE8C_SETUP.md). For an existing configured project, run from its root:
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
@@ -65,9 +66,9 @@ For a fresh installation, follow [Windows setup](docs/setup_windows.md). It cove
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-The default run has **80 tests: 59 passing and 21 skipped integration tests**. Set `MARGINGUARD_TEST_DATABASE_URL` to a disposable PostgreSQL database to enable integration tests, which create and drop isolated schemas.
+The suite has **97 tests: 63 unit/fixture checks and 34 optional integration tests**. Set `MARGINGUARD_TEST_DATABASE_URL` to a disposable PostgreSQL database to enable integration tests, which create and drop isolated schemas.
 
-The latest complete development run passed all 80 tests using embedded PostgreSQL through its socket adapter. Streamlit AppTest also checked filters, empty selections, imports, detection, case actions, recoveries, corrections, report controls and fresh-session persistence. See [Phase 5 verification](docs/phase5_verification.md) for the environment and limits. Native Windows PostgreSQL/Python 3.13 verification is performed separately on the user's machine.
+The latest development run passed all 97 tests using embedded PostgreSQL through its socket adapter. Streamlit AppTest checked authenticated filters, imports, case/recovery workflows, reports, first-login denial, Admin membership changes, company switching, Viewer restrictions and revocation with mocked Google identities. Native Windows PostgreSQL/Python 3.13 and real Google login are checked separately on the user's machine. See [access design](docs/access_design.md) for limits; [Phase 5 verification](docs/phase5_verification.md) records the earlier milestone.
 
 ## Automated checks on GitHub
 
@@ -102,7 +103,7 @@ This configuration is verified locally; the first hosted matrix result must be c
 
 ## Toward a commercial product
 
-Validate export availability, approved-pricing rules and reviewer needs with prospective users. Engineering priorities include verified organization membership, role-based actions, restricted database permissions, tested tenant isolation, backup/restore procedures and accounting integrations. Freight and credit detectors require additional policy and transaction evidence. An optional model-based explanation provider can reuse the evidence boundary while financial calculations and decisions remain in the domain services.
+Validate export availability, approved-pricing rules and reviewer needs with prospective users. Engineering priorities include restricted database permissions, row-level security and concurrency testing, deployment operations, protected audit retention and accounting integrations. Freight and credit detectors require additional policy and transaction evidence. An optional model-based explanation provider can reuse the evidence boundary while financial calculations and decisions remain in the domain services.
 
 Composite tenant keys and query predicates do not constitute a completed hosted authorization system. Git versions code and fictional fixtures; PostgreSQL contains live imports, cases and recovery history and needs separate backups.
 

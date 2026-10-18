@@ -10,7 +10,7 @@ with get_engine().begin() as conn:
     versions = set(conn.execute(text('SELECT version FROM schema_migrations')).scalars())
     if '001' not in versions:
         raise RuntimeError('Phase 1 schema is required. Use init_db.py only on an empty database.')
-    for version, filename in [('002','002_import_lineage.sql'),('003','003_investigations.sql')]:
+    for version, filename in [('002','002_import_lineage.sql'),('003','003_investigations.sql'),('004','004_access_foundation.sql'),('005','005_membership_audit.sql')]:
         if version in versions:
             messages.append(f'Migration {version} already applied; no changes needed.')
         else:

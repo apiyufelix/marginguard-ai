@@ -37,7 +37,7 @@ The seed-42 fixture contains 40 fictional customers, 60 products, 500 orders and
 
 These are synthetic results, not customer savings, confirmed business losses or recovered cash. Sample line IMP-IL001 has 10 units billed at $18 against an agreed $20, creating a $20 candidate amount. A reviewer still determines whether any amount is supported for confirmation.
 
-The latest development harness passed **80 tests**, including unit/fixture and PostgreSQL integration checks using embedded PostgreSQL. Streamlit AppTest exercised uploads, detection, review actions, recovery corrections, report controls, filters and fresh-session persistence. The default local run skips 21 optional integration tests. See [verification details](phase5_verification.md) for the environment and limits.
+The Phase 5 development harness passed **80 tests**, including unit/fixture and PostgreSQL integration checks using embedded PostgreSQL. Streamlit AppTest exercised uploads, detection, review actions, recovery corrections, report controls, filters and fresh-session persistence. The default local run skips 21 optional integration tests. See [verification details](phase5_verification.md) for the environment and limits.
 
 ## Skills demonstrated
 
@@ -45,9 +45,9 @@ The project translates a business control into a precise financial rule, relatio
 
 ## Limits and next steps
 
-This is a local prototype. Author/owner labels are manually entered, and hosted tenant authorization is incomplete. The implemented rule covers invoice-price underbilling; freight policies, credits, rebates, foreign exchange and other leakage types need additional evidence and rules. Recorded recovery is not independently verified bank settlement.
+This is a local development application. Phase 8 adds Google login, explicit company memberships, role checks and verified case actors. Assigned owners and legacy actor labels remain user-entered. Production database row security and hosted operations remain incomplete. The implemented rule covers invoice-price underbilling; freight policies, credits, rebates, foreign exchange and other leakage types need additional evidence and rules. Recorded recovery is not independently verified bank settlement.
 
-Next, validate matching and approved-pricing assumptions with prospective users, then measure review time, supported confirmation rates and export availability in a controlled pilot. Commercial engineering would add verified identity, roles, restricted database permissions, tested tenant isolation, backup/restore operations and accounting integrations.
+Next, validate matching and approved-pricing assumptions with prospective users, then measure review time, supported confirmation rates and export availability in a controlled pilot. Commercial engineering would add restricted database permissions, row-level security, broader concurrency testing, hosted recovery operations and accounting integrations. See [current access design and verification](access_design.md).
 
 ## Suggested portfolio description
 
