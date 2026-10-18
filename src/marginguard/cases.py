@@ -6,6 +6,7 @@ from decimal import Decimal
 from uuid import uuid4
 from sqlalchemy import text
 from marginguard.workflow import CasePolicyError, required_text, transition_amount, validate_recovery
+from marginguard.access import require_access
 
 RULE_CODE = 'PRICE_UNDERBILLING'
 RULE_VERSION = '1'
@@ -29,6 +30,15 @@ def _params(tenant):
 def _event(conn, tenant, finding, event_type, actor, details, request_key=None,
            amount=None, reverses=None):
     event_id = str(uuid4())
+    verified = conn.info.get('marginguard_actor')
+    if verified is not None:
+        actor = verified['display_name']
+        conn.execute(text('''INSERT INTO case_events
+            (tenant_id,event_id,finding_id,event_type,actor,actor_user_id,details,request_key,amount,reverses_event_id)
+            VALUES(:tenant,:event,:finding,:type,:actor,:user_id,CAST(:details AS jsonb),:request,:amount,:reverses)'''),
+            {'tenant':tenant,'event':event_id,'finding':finding,'type':event_type,'actor':actor,'user_id':verified['user_id'],
+             'details':json.dumps(details,default=str),'request':request_key,'amount':amount,'reverses':reverses})
+        return event_id
     conn.execute(text('''INSERT INTO case_events
         (tenant_id,event_id,finding_id,event_type,actor,details,request_key,amount,reverses_event_id)
         VALUES(:tenant,:event,:finding,:type,:actor,CAST(:details AS jsonb),:request,:amount,:reverses)'''),
@@ -41,6 +51,7 @@ def run_detection(engine, tenant):
     """Persist newly observed discrepancies. Repeated scans preserve review decisions."""
     created = 0
     with engine.begin() as conn:
+        require_access(conn,tenant,'write')
         _ready(conn)
         conn.execute(text('SELECT pg_advisory_xact_lock(hashtextextended(:tenant,0))'),{'tenant':tenant})
         if not conn.execute(text('SELECT 1 FROM tenants WHERE tenant_id=:tenant'),{'tenant':tenant}).scalar():
@@ -64,6 +75,7 @@ def run_detection(engine, tenant):
 
 
 def list_cases(conn, tenant):
+    require_access(conn,tenant)
     _ready(conn)
     return [dict(x) for x in conn.execute(text('''SELECT f.*,
         COALESCE(r.net_recovered,0) AS net_recovered
@@ -84,6 +96,7 @@ def summarize(cases):
 
 
 def get_case(conn, tenant, finding):
+    require_access(conn,tenant)
     _ready(conn)
     result = conn.execute(text('''SELECT * FROM findings WHERE tenant_id=:tenant AND finding_id=:finding
         AND rule_code=:rule AND rule_version=:rule_version'''),{**_params(tenant),'finding':finding}).mappings().first()
@@ -103,8 +116,10 @@ def active_recoveries(case):
 def _apply(engine, tenant, finding, actor, expected_version, request_key, action, payload, handler):
     actor = required_text(actor,'Activity author',128)
     request_key = required_text(request_key,'Action identifier',128)
-    fingerprint = hashlib.sha256(json.dumps({'finding':finding,'actor':actor,'action':action,'payload':payload},sort_keys=True,default=str).encode()).hexdigest()
     with engine.begin() as conn:
+        verified = require_access(conn,tenant,'write')
+        actor_key = str(verified['user_id']) if verified else actor
+        fingerprint = hashlib.sha256(json.dumps({'finding':finding,'actor':actor_key,'action':action,'payload':payload},sort_keys=True,default=str).encode()).hexdigest()
         _ready(conn)
         row = conn.execute(text('''SELECT finding_id,version FROM findings
             WHERE tenant_id=:tenant AND finding_id=:finding AND rule_code=:rule AND rule_version=:rule_version
