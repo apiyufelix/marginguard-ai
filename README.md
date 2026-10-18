@@ -69,6 +69,12 @@ The default run has **80 tests: 59 passing and 21 skipped integration tests**. S
 
 The latest complete development run passed all 80 tests using embedded PostgreSQL through its socket adapter. Streamlit AppTest also checked filters, empty selections, imports, detection, case actions, recoveries, corrections, report controls and fresh-session persistence. See [Phase 5 verification](docs/phase5_verification.md) for the environment and limits. Native Windows PostgreSQL/Python 3.13 verification is performed separately on the user's machine.
 
+## Automated checks on GitHub
+
+The [Tests workflow](.github/workflows/tests.yml) is configured to run the full suite on Python 3.12 and 3.13 with a disposable PostgreSQL 16 service for pushes and pull requests to `main`. It can also be started manually. Its strict runner rejects missing database configuration, skipped tests and empty discovery.
+
+This configuration is verified locally; the first hosted matrix result must be confirmed in the repository's Actions tab after pushing it. See [CI setup and verification](docs/ci.md). The workflow runs application tests and does not deploy the application.
+
 ## Project layout
 
 | Path | Purpose |
